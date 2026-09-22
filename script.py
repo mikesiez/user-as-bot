@@ -1,5 +1,7 @@
+import json
 import os
 import time
+import requests
 from collections import deque
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -8,9 +10,99 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import StaleElementReferenceException
 import undetected_chromedriver as uc
+import json
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import quote
 
 from dotenv import load_dotenv
 load_dotenv()
+
+def getgame(name):
+    domain = os.getenv("domain")
+    cookie = os.getenv("cookie")
+    referer = os.getenv("referer")
+
+    link = f"{domain}/{quote(name)}"
+    print(f"getting {link}")
+
+    try:
+        headers = {
+            "Cookie": cookie,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": referer,
+        }
+
+        res = requests.get(link, headers=headers, timeout=10)
+
+        html = res.text
+
+        soup = BeautifulSoup(html, "html.parser")
+
+        links = None
+
+        for div in soup.find_all("div"):
+            if div.get_text(strip=True) == "Gofile":
+                data = div.get("data-links")
+
+                if data:
+                    links = json.loads(data)
+                    break
+
+        msg = ""
+
+        for link in links:
+            msg += f"[{link['file_name']}]({link['direct_link']})\n"
+
+        return msg;
+
+    except Exception as e:
+        return f"something went wrong: {e}.\n> Hint: If type error then doesnt exist or you mispelled"
+    One
+
+def prompt(msg,username):
+
+    model = "qwen3:8b"
+    personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man."
+    endpoint = "http://10.0.0.33:11434/api/chat" #can use /chat if want to make context or more system related hints to the ai
+    think = False
+    
+    response = requests.post(
+        endpoint,
+        headers={
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": model,
+            "think": think,
+            "stream": False,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": personality
+                },
+                {
+                    "role": "user",
+                    "content": f"{username} prompted you with': {msg}"
+                }
+            ]
+        }
+    )
+
+    data = response.json()
+
+    thought_time = data["total_duration"]
+    answer = data["message"]["content"]
+
+    warn = False
+
+    if len(answer) > 2000:  # max Discord character limit
+        answer = f"{answer[:2000 - 3]}..."
+        warn = True
+
+    return answer
 
 def send_message(driver, text):
     """Finds Discord's message input box, types the text, and sends Enter."""
@@ -27,8 +119,16 @@ def send_message(driver, text):
         input_box.click()
         time.sleep(0.2)
 
-        input_box.send_keys(text)
-        time.sleep(0.5)
+        # Type text while preserving newlines as Discord line breaks
+        parts = text.split("\n")
+
+        for i, part in enumerate(parts):
+            input_box.send_keys(part)
+
+            if i < len(parts) - 1:
+                input_box.send_keys(Keys.SHIFT, Keys.ENTER)
+
+        time.sleep(1)
 
         input_box.send_keys(Keys.ENTER)
         input_box.send_keys(Keys.ENTER)
@@ -46,7 +146,17 @@ def watch_messages(driver, max_history=25):
 
     # Fixed-size buffer for the last N messages
     message_buffer = deque(maxlen=max_history)
-    seen_message_ids = set()
+
+    SEEN_IDS_FILE = "seen_message_ids.json"
+    # Load previously seen message IDs
+    try:
+        with open(SEEN_IDS_FILE, "r") as f:
+            seen_message_ids = set(json.load(f))
+        print(f"Loaded {len(seen_message_ids)} previously seen message IDs.")
+    except FileNotFoundError:
+        seen_message_ids = set()
+        print("No previous message ID file found. Starting fresh.")
+
     last_known_username = "Unknown/System"
 
     MY_BOT_USERNAME = "Jarvis"
@@ -87,18 +197,28 @@ def watch_messages(driver, max_history=25):
 
                     payload = {"id": msg_id, "username": username, "content": content}
                     message_buffer.append(payload)
+
+                    # Mark as seen
                     seen_message_ids.add(msg_id)
+
+                    # Save immediately
+                    with open(SEEN_IDS_FILE, "w") as f:
+                        json.dump(list(seen_message_ids), f)
 
                     print(f"[NEW] {username}: {content}")
 
                     # --- AUTO-REPLY LOGIC ---
                     # Ignore messages sent by yourself to avoid infinite reply loops
                     if username != MY_BOT_USERNAME and content:
-                        content_lower = content.lower()
 
-                        if "!ping" in content_lower:
-                            send_message(driver, f"Pong! @{username}")
-                        elif "!hello" in content_lower:
+                        if "@jarvis" in content.lower():
+                            send_message(driver,"off rn")
+                            # send_message(driver, prompt(content,username))
+                        elif (content.lower())[:5] == "/game":
+                            gameName = content[6:]
+                            send_message(driver, getgame(gameName))
+
+                        elif "!hello" in content:
                             send_message(driver, f"Hey {username}, what's up?")
 
                 except StaleElementReferenceException:
