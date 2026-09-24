@@ -68,7 +68,7 @@ def getgame(name):
 def prompt(msg,username):
 
     model = "qwen3:8b"
-    personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man."
+    personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man. Reply to people as if you are talking to them, not in the third person."
     endpoint = "http://10.0.0.33:11434/api/chat" #can use /chat if want to make context or more system related hints to the ai
     think = False
     
@@ -215,7 +215,7 @@ def watch_messages(driver, max_history=25):
                     if username != MY_BOT_USERNAME and content:
 
                         if f"@{MY_BOT_USERNAME.lower()}" in content.lower():
-                            send_message(driver,"off rn")
+                            send_message(driver,prompt(content))
                             # send_message(driver, prompt(content,username))
                         elif (content.lower())[:5] == "/game":
                             gameName = content[6:]
