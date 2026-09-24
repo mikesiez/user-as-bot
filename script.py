@@ -214,7 +214,7 @@ def watch_messages(driver, max_history=25):
                     # Ignore messages sent by yourself to avoid infinite reply loops
                     if username != MY_BOT_USERNAME and content:
 
-                        if f"@{MY_BOT_USERNAME}" in content.lower():
+                        if f"@{MY_BOT_USERNAME.lower()}" in content.lower():
                             send_message(driver,"off rn")
                             # send_message(driver, prompt(content,username))
                         elif (content.lower())[:5] == "/game":
