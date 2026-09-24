@@ -70,29 +70,33 @@ def prompt(msg,username):
     model = "qwen3:8b"
     personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man. Reply to people as if you are talking to them, not in the third person."
     endpoint = "http://localhost:11434/api/chat" #can use /chat if want to make context or more system related hints to the ai
-    
-    response = requests.post(
-        endpoint,
-        headers={
-            "Content-Type": "application/json"
-        },
-        json={
-            "model": model,
-            "stream": False,
-            "think":False,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": personality
-                },
-                {
-                    "role": "user",
-                    "content": f"{username} says: {msg}"
-                }
-            ]
-        }
-    )
 
+    payload = {
+        "model": model,
+        "stream": False,
+        "think":False,
+        "messages": [
+            {
+                "role": "system",
+                "content": personality
+            },
+            {
+                "role": "user",
+                "content": f"{username} says: {msg}"
+            }
+        ]
+    }
+
+    print(f"prompted from {username} with {msg}")
+    try:
+        response = requests.post(
+            endpoint,
+            headers={"Content-Type": "application/json"},
+            json=payload
+        )
+    except Exception as e:
+        print(f"err: {e}")
+        return f"err: {e}"
     data = response.json()
 
     #thought_time = data["total_duration"]
