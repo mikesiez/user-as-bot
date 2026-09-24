@@ -15,6 +15,9 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote
 
+# HEADLESS SERVER DEPENDENCY
+from pyvirtualdisplay import Display
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -250,13 +253,20 @@ def run_with_uc():
             "Please set it before running the script."
         )
 
-    options = uc.ChromeOptions()
-    options.add_argument('--disable-gpu')
-    options.add_argument('--headless') # Remove this if you need to debug visually
-    
-    driver = uc.Chrome(options=options)
-    
+    # 1. Fire up the virtual frame buffer monitor
+    print("Starting Virtual Display...")
+    display = Display(visible=0, size=(1920, 1080))
+    display.start()
+
+    driver = None
     try:
+        options = uc.ChromeOptions()
+        options.add_argument('--disable-gpu')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--headless') # Remove this if you need to debug visually
+        
+        driver = uc.Chrome(options=options)
+
         driver.get('https://discord.com/login')
         time.sleep(3)
 
@@ -274,10 +284,20 @@ def run_with_uc():
         driver.get(f"https://discord.com/channels/@me/{gc}")
         
         # Start watching live updates
-        recent_messages = watch_messages(driver, max_history=15)
+        watch_messages(driver, max_history=15)
+
+    except Exception as e:
+        print(f"An execution crash occurred: {e}")
     
     finally:
-        driver.quit()
+        print("Cleaning up resources...")
+        if driver:
+            try:
+                driver.quit()
+            except:
+                pass
+        display.stop()
+        print("Teardown finished.")
 
 if __name__ == "__main__":
     run_with_uc()
