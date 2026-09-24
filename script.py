@@ -69,8 +69,7 @@ def prompt(msg,username):
 
     model = "qwen3:8b"
     personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man. Reply to people as if you are talking to them, not in the third person."
-    endpoint = "http://localhost/api/chat" #can use /chat if want to make context or more system related hints to the ai
-    think = False
+    endpoint = "http://localhost:11434/api/chat" #can use /chat if want to make context or more system related hints to the ai
     
     response = requests.post(
         endpoint,
@@ -79,7 +78,7 @@ def prompt(msg,username):
         },
         json={
             "model": model,
-            "think": think,
+            "think": False,
             "stream": False,
             "messages": [
                 {
@@ -96,14 +95,11 @@ def prompt(msg,username):
 
     data = response.json()
 
-    thought_time = data["total_duration"]
+    #thought_time = data["total_duration"]
     answer = data["message"]["content"]
-
-    warn = False
 
     if len(answer) > 2000:  # max Discord character limit
         answer = f"{answer[:2000 - 3]}..."
-        warn = True
 
     return answer
 
