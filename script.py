@@ -67,8 +67,9 @@ def getgame(name):
 
 def prompt(msg,username):
 
-    model = "qwen3:8b"
-    personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man. Reply to people as if you are talking to them, not in the third person."
+    # model = "qwen3:8b"
+    model = "clyde" #custom client-side model
+    # personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man. Reply to people as if you are talking to them, not in the third person."
     endpoint = "http://localhost:11434/api/chat" #can use /chat if want to make context or more system related hints to the ai
 
     payload = {
@@ -76,10 +77,10 @@ def prompt(msg,username):
         "stream": False,
         "think":False,
         "messages": [
-            {
-                "role": "system",
-                "content": personality
-            },
+            # {
+            #     "role": "system",
+            #     "content": personality
+            # },
             {
                 "role": "user",
                 "content": f"{username} says: {msg}"
