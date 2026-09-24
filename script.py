@@ -78,8 +78,8 @@ def prompt(msg,username):
         },
         json={
             "model": model,
-            "think": False,
             "stream": False,
+            "think":False,
             "messages": [
                 {
                     "role": "system",
@@ -87,7 +87,7 @@ def prompt(msg,username):
                 },
                 {
                     "role": "user",
-                    "content": f"{username} prompted you with': {msg}"
+                    "content": f"{username} says: {msg}"
                 }
             ]
         }
