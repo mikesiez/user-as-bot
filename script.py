@@ -75,7 +75,7 @@ def prompt(msg,username):
     payload = {
         "model": model,
         "stream": False,
-        "think":False,
+        "think":True,
         "messages": [
             # {
             #     "role": "system",
