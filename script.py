@@ -88,7 +88,7 @@ def prompt(msg,username):
         ]
     }
 
-    print(f"prompted from {username} with {msg}")
+    #print(f"prompted from {username} with {msg}")
     try:
         response = requests.post(
             endpoint,
@@ -99,6 +99,8 @@ def prompt(msg,username):
         print(f"err: {e}")
         return f"err: {e}"
     data = response.json()
+
+    print(data)
 
     #thought_time = data["total_duration"]
     answer = data["message"]["content"]
