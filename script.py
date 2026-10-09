@@ -268,7 +268,7 @@ def run_with_uc():
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--headless') # Remove this if you need to debug visually
         
-        driver = uc.Chrome(options=options)
+        driver = uc.Chrome(options=options,version_main=154)
 
         driver.get('https://discord.com/login')
         time.sleep(3)
