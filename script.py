@@ -98,10 +98,11 @@ def prompt(msg,username):
             headers={"Content-Type": "application/json"},
             json=payload
         )
+        data = response.json()
+        
     except Exception as e:
         print(f"err: {e}")
         return f"err: {e}"
-    data = response.json()
 
     #thought_time = data["total_duration"]
     answer = data["message"]["content"]
