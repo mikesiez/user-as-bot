@@ -21,6 +21,9 @@ from pyvirtualdisplay import Display
 from dotenv import load_dotenv
 load_dotenv()
 
+message_queue = [
+];
+
 def getgame(name):
     domain = os.getenv("domain")
     cookie = os.getenv("cookie")
@@ -67,26 +70,26 @@ def getgame(name):
 
 def prompt(msg,username):
 
+    while (len(message_queue > 20)):
+        message_queue.pop(0);
+
     # model = "qwen3:8b"
     model = "clyde" #custom client-side model
     # personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man. Reply to people as if you are talking to them, not in the third person."
     endpoint = "http://localhost:11434/api/chat" #can use /chat if want to make context or more system related hints to the ai
 
+
+    message_queue.append({
+        "role": "user",
+        "content": f"{username} says: {msg}"
+    })
     payload = {
         "model": model,
         "stream": False,
         "think":False,
-        "messages": [
-            # {
-            #     "role": "system",
-            #     "content": personality
-            # },
-            {
-                "role": "user",
-                "content": f"{username} says: {msg}"
-            }
-        ]
+        "messages": message_queue,
     }
+    
 
     #print(f"prompted from {username} with {msg}")
     try:
@@ -104,6 +107,11 @@ def prompt(msg,username):
 
     #thought_time = data["total_duration"]
     answer = data["message"]["content"]
+    
+    message_queue.append({
+        "role": "assistant",
+        "content": data["message"]["content"],
+    })
 
     if len(answer) > 2000:  # max Discord character limit
         answer = f"{answer[:2000 - 3]}..."
