@@ -70,7 +70,7 @@ def getgame(name):
 
 def prompt(msg,username):
 
-    while (len(message_queue > 20)):
+    while (len(message_queue) > 20):
         message_queue.pop(0);
 
     # model = "qwen3:8b"
@@ -81,7 +81,7 @@ def prompt(msg,username):
 
     message_queue.append({
         "role": "user",
-        "content": f"{username} says: {msg}"
+        "content": msg,
     })
     payload = {
         "model": model,
@@ -103,14 +103,12 @@ def prompt(msg,username):
         return f"err: {e}"
     data = response.json()
 
-    print(data)
-
     #thought_time = data["total_duration"]
     answer = data["message"]["content"]
     
     message_queue.append({
         "role": "assistant",
-        "content": data["message"]["content"],
+        "content": answer,
     })
 
     if len(answer) > 2000:  # max Discord character limit
