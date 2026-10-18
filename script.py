@@ -68,6 +68,60 @@ def getgame(name):
         return f"something went wrong: {e}.\n> Hint: If type error then doesnt exist or you mispelled"
     One
 
+def gettrending():
+    gamespage = os.getenv("gamespage")
+    cookie = os.getenv("cookie")
+    referer = os.getenv("referer")
+
+    print(f"getting {gamespage}")
+
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Sec-Fetch-User": "?1",
+        }
+
+        if cookie:
+            headers["Cookie"] = cookie
+        if referer:
+            headers["Referer"] = referer
+
+        res = requests.get(gamespage, headers=headers, timeout=10)
+
+        # page is windows-1251, give bs4 the raw bytes so it reads the charset itself
+        html = res.content
+
+        soup = BeautifulSoup(html, "html.parser")
+
+        games = None
+
+        # "Новинки" (new items) section under the popular games
+        for div in soup.find_all("div", class_="title"):
+            if div.get_text(strip=True) == "Новинки":
+                section = div.find_parent("div", class_="game-rating")
+
+                if section:
+                    games = section.select(".games-cont a h3")
+                    break
+
+        msg = ""
+
+        for game in games:
+            msg += f"{game.get_text(strip=True)}\n"
+
+        return msg;
+
+    except Exception as e:
+        return f"something went wrong: {e}.\n> Hint: If type error then the new items section wasnt found"
+
 def prompt(msg,username):
 
     while (len(message_queue) > 20):
@@ -230,6 +284,9 @@ def watch_messages(driver, max_history=25):
                         elif (content.lower())[:5] == "/game":
                             gameName = content[6:]
                             send_message(driver, getgame(gameName))
+
+                        elif (content.lower())[:9] == "/trending":
+                            send_message(driver, gettrending())
 
                         elif (content.lower())[:6] == "/image":
                             send_message(driver, f"{os.getenv("api")}{quote(content[7:])}")
