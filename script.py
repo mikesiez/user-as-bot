@@ -66,7 +66,7 @@ def getgame(name):
 
     except Exception as e:
         return f"something went wrong: {e}.\n> Hint: If type error then doesnt exist or you mispelled"
-    One
+    
 
 def gettrending():
     gamespage = os.getenv("gamespage")
