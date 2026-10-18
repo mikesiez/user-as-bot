@@ -69,11 +69,7 @@ def getgame(name):
     
 
 def gettrending():
-    gamespage = os.getenv("gamespage")
-    cookie = os.getenv("cookie")
     referer = os.getenv("referer")
-
-    print(f"getting {gamespage}")
 
     try:
         headers = {
@@ -89,12 +85,7 @@ def gettrending():
             "Sec-Fetch-User": "?1",
         }
 
-        if cookie:
-            headers["Cookie"] = cookie
-        if referer:
-            headers["Referer"] = referer
-
-        res = requests.get(gamespage, headers=headers, timeout=10)
+        res = requests.get(referer, headers=headers, timeout=10)
 
         # page is windows-1251, give bs4 the raw bytes so it reads the charset itself
         html = res.content
