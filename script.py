@@ -118,11 +118,20 @@ def prompt(msg,username):
     while (len(message_queue) > 20):
         message_queue.pop(0);
 
-    # model = "qwen3:8b"
-    model = "clyde" #custom client-side model
-    # personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man. Reply to people as if you are talking to them, not in the third person."
-    endpoint = "http://localhost:11434/api/chat" #can use /chat if want to make context or more system related hints to the ai
-
+    model = "gemini-auto"
+    personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man. Reply to people as if you are talking to them, not in the third person."
+    endpoint = "http://localhost:6969/v1/stateless/chat/completions" 
+    
+    fetch("http://10.0.0.33:6969/v1/chat/completions", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-US,en;q=0.9,fr-FR;q=0.8,fr;q=0.7,ar-SA;q=0.6,ar;q=0.5",
+    "content-type": "application/json",
+    "Referer": "http://10.0.0.33:6969/ui/playground"
+  },
+  "body": "{\"model\":\"gemini-auto\",\"stream\":false,\"messages\":[{\"role\":\"user\",\"content\":\"can u do asmr\"}]}",
+  "method": "POST"
+});
 
     message_queue.append({
         "role": "user",
@@ -323,7 +332,7 @@ def run_with_uc():
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--headless') # Remove this if you need to debug visually
         
-        driver = uc.Chrome(options=options,version_main=154)
+        driver = uc.Chrome(options=options,version_main=156)
 
         driver.get('https://discord.com/login')
         time.sleep(3)
@@ -359,3 +368,53 @@ def run_with_uc():
 
 if __name__ == "__main__":
     run_with_uc()
+
+
+# def ollamaprompt(msg,username):
+
+#     while (len(message_queue) > 20):
+#         message_queue.pop(0);
+
+#     # model = "qwen3:8b"
+#     model = "clyde" #custom client-side model
+#     # personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man. Reply to people as if you are talking to them, not in the third person."
+#     endpoint = "http://localhost:11434/api/chat" #can use /chat if want to make context or more system related hints to the ai
+
+
+#     message_queue.append({
+#         "role": "user",
+#         "content": msg,
+#     })
+#     payload = {
+#         "model": model,
+#         "stream": False,
+#         "think":False,
+#         "messages": message_queue,
+#     }
+    
+
+#     #print(f"prompted from {username} with {msg}")
+#     try:
+#         response = requests.post(
+#             endpoint,
+#             headers={"Content-Type": "application/json"},
+#             json=payload
+#         )
+#         data = response.json()
+        
+#     except Exception as e:
+#         print(f"err: {e}")
+#         return f"err: {e}"
+
+#     #thought_time = data["total_duration"]
+#     answer = data["message"]["content"]
+    
+#     message_queue.append({
+#         "role": "assistant",
+#         "content": answer,
+#     })
+
+#     if len(answer) > 2000:  # max Discord character limit
+#         answer = f"{answer[:2000 - 3]}..."
+
+#     return answer
