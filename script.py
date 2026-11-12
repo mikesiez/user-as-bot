@@ -118,20 +118,10 @@ def prompt(msg,username):
     while (len(message_queue) > 20):
         message_queue.pop(0);
 
-    model = "gemini-auto"
-    personality = "You are jarvis. System built by tony stark. Robotic, serious, but humourstic when appropriate. You work for tony stark, the stark industries aka iron man. Reply to people as if you are talking to them, not in the third person."
+    model = os.getenv("model")
+    personality = os.getenv("persona")
     endpoint = "http://localhost:6969/v1/stateless/chat/completions" 
     
-    fetch("http://10.0.0.33:6969/v1/chat/completions", {
-  "headers": {
-    "accept": "*/*",
-    "accept-language": "en-US,en;q=0.9,fr-FR;q=0.8,fr;q=0.7,ar-SA;q=0.6,ar;q=0.5",
-    "content-type": "application/json",
-    "Referer": "http://10.0.0.33:6969/ui/playground"
-  },
-  "body": "{\"model\":\"gemini-auto\",\"stream\":false,\"messages\":[{\"role\":\"user\",\"content\":\"can u do asmr\"}]}",
-  "method": "POST"
-});
 
     message_queue.append({
         "role": "user",
@@ -144,8 +134,6 @@ def prompt(msg,username):
         "messages": message_queue,
     }
     
-
-    #print(f"prompted from {username} with {msg}")
     try:
         response = requests.post(
             endpoint,
