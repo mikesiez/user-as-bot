@@ -48,7 +48,8 @@ def getgame(name):
         body = {"url":link}
         res = requests.post(fetchDom, headers=headers, json=body, timeout=15)
 
-        html = res.json()["html"]
+        resp = res.json()
+        html = resp["html"]
 
         soup = BeautifulSoup(html, "html.parser")
 
@@ -70,7 +71,7 @@ def getgame(name):
         return msg;
 
     except Exception as e:
-        return f"something went wrong: {e}.\n> Hint: If type error then doesnt exist or you mispelled"
+        return f"something went wrong: {e}. Fetcher success?: {resp["success"]}.\n> Hint: If success then game not exist or mispell"
     
 
 def gettrending():
