@@ -21,7 +21,7 @@ from pyvirtualdisplay import Display
 from dotenv import load_dotenv
 load_dotenv()
 
-message_queue = [
+ai_memory = [
 ];
 
 def getgame(name):
@@ -29,21 +29,26 @@ def getgame(name):
     cookie = os.getenv("cookie")
     referer = os.getenv("referer")
 
+    fetchRef = os.getenv("fetchRef")
+    fetchDom = os.getenv("fetchDom")
+
     link = f"{domain}/{quote(name)}"
     print(f"getting {link}")
 
     try:
         headers = {
-            "Cookie": cookie,
+            # "Cookie": cookie,
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "Accept-Language": "en-US,en;q=0.9",
-            "Referer": referer,
+            "Referer": fetchRef,
         }
 
-        res = requests.get(link, headers=headers, timeout=10)
+        # res = requests.get(link, headers=headers, timeout=10)
+        body = {"url":link}
+        res = requests.post(fetchDom, headers=headers, json=body, timeout=15)
 
-        html = res.text
+        html = res.json()["html"]
 
         soup = BeautifulSoup(html, "html.parser")
 
@@ -115,15 +120,15 @@ def gettrending():
 
 def prompt(msg,username):
 
-    while (len(message_queue) > 20):
-        message_queue.pop(0);
+    while (len(ai_memory) > 20):
+        ai_memory.pop(0);
 
     model = os.getenv("model")
     personality = os.getenv("persona")
     endpoint = "http://localhost:6969/v1/stateless/chat/completions" 
     
 
-    message_queue.append({
+    ai_memory.append({
         "role": "user",
         "content": msg,
     })
@@ -131,7 +136,7 @@ def prompt(msg,username):
         "model": model,
         "stream": False,
         "think":False,
-        "messages": message_queue,
+        "messages": ai_memory,
     }
     
     try:
@@ -149,7 +154,7 @@ def prompt(msg,username):
     #thought_time = data["total_duration"]
     answer = data["message"]["content"]
     
-    message_queue.append({
+    ai_memory.append({
         "role": "assistant",
         "content": answer,
     })
@@ -206,10 +211,10 @@ def watch_messages(driver, max_history=25):
     # Load previously seen message IDs
     try:
         with open(SEEN_IDS_FILE, "r") as f:
-            seen_message_ids = set(json.load(f))
+            seen_message_ids = list(json.load(f))
         print(f"Loaded {len(seen_message_ids)} previously seen message IDs.")
     except FileNotFoundError:
-        seen_message_ids = set()
+        seen_message_ids = list()
         print("No previous message ID file found. Starting fresh.")
 
     last_known_username = "Unknown/System"
@@ -258,6 +263,8 @@ def watch_messages(driver, max_history=25):
 
                     # Save immediately
                     with open(SEEN_IDS_FILE, "w") as f:
+                        if len(seen_message_ids) > 30:
+                            seen_message_ids = seen_message_ids[-30:]
                         json.dump(list(seen_message_ids), f)
 
                     print(f"[NEW] {username}: {content}")
