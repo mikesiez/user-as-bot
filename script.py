@@ -206,7 +206,7 @@ def watch_messages(driver, max_history=25):
     )
 
     # Fixed-size buffer for the last N messages
-    message_buffer = deque(maxlen=max_history)
+    # message_buffer = deque(maxlen=max_history)
 
     SEEN_IDS_FILE = "seen_message_ids.json"
     # Load previously seen message IDs
@@ -257,10 +257,10 @@ def watch_messages(driver, max_history=25):
                         content = ""
 
                     payload = {"id": msg_id, "username": username, "content": content}
-                    message_buffer.append(payload)
+                    # message_buffer.append(payload)
 
                     # Mark as seen
-                    seen_message_ids.add(msg_id)
+                    seen_message_ids.append(msg_id)
 
                     # Save immediately
                     with open(SEEN_IDS_FILE, "w") as f:
@@ -303,7 +303,7 @@ def watch_messages(driver, max_history=25):
         except Exception as e:
             time.sleep(1)
 
-    return list(message_buffer)
+    return True #list(message_buffer)
 
 def run_with_uc():
     # Retrieve token from environment variables
