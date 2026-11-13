@@ -199,7 +199,7 @@ def send_message(driver, text):
     except Exception as e:
         print(f"Failed to send message: {e}")
 
-def watch_messages(driver, max_history=25):
+def watch_messages(driver):
     wait = WebDriverWait(driver, 15)
     container = wait.until(
         EC.presence_of_element_located((By.CSS_SELECTOR, 'ol[data-list-id="chat-messages"]'))
@@ -222,7 +222,7 @@ def watch_messages(driver, max_history=25):
 
     MY_BOT_USERNAME = os.getenv("username")
 
-    print(f"--- Started watching chat (keeping last {max_history} messages) ---")
+    print(f"--- Started watching chat ---")
 
     while True:
         try:
@@ -264,8 +264,8 @@ def watch_messages(driver, max_history=25):
 
                     # Save immediately
                     with open(SEEN_IDS_FILE, "w") as f:
-                        if len(seen_message_ids) > 30:
-                            seen_message_ids = seen_message_ids[-30:]
+                        if len(seen_message_ids) > 100:
+                            seen_message_ids = seen_message_ids[-100:]
                         json.dump(list(seen_message_ids), f)
 
                     print(f"[NEW] {username}: {content}")
@@ -347,7 +347,7 @@ def run_with_uc():
         driver.get(f"https://discord.com/channels/@me/{gc}")
         
         # Start watching live updates
-        watch_messages(driver, max_history=15)
+        watch_messages(driver)
 
     except Exception as e:
         print(f"An execution crash occurred: {e}")
