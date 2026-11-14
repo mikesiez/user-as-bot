@@ -153,6 +153,9 @@ def prompt(msg):
         print(f"err: {e}")
         return f"err: {e}"
 
+    if data["detail"] == os.getenv("notauth"):
+        return "not authenticated"
+    
     answer = data["choices"][0]["message"]["content"]
     
     ai_memory.append({
