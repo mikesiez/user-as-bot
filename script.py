@@ -22,6 +22,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 ai_memory = [
+    {
+        "role":"system",
+        "content":f"your personality: {os.getenv("persona")}"
+    }
 ];
 
 def getgame(name):
@@ -119,15 +123,13 @@ def gettrending():
     except Exception as e:
         return f"something went wrong: {e}.\n> Hint: If type error then the new items section wasnt found"
 
-def prompt(msg,username):
+def prompt(msg):
 
     while (len(ai_memory) > 20):
         ai_memory.pop(0);
 
     model = os.getenv("model")
-    personality = os.getenv("persona")
-    endpoint = "http://localhost:6969/v1/stateless/chat/completions" 
-    
+    endpoint = os.getenv("aiEndPoint") 
 
     ai_memory.append({
         "role": "user",
@@ -135,9 +137,8 @@ def prompt(msg,username):
     })
     payload = {
         "model": model,
-        "stream": False,
-        "think":False,
         "messages": ai_memory,
+        "temperature":0.7
     }
     
     try:
@@ -152,8 +153,7 @@ def prompt(msg,username):
         print(f"err: {e}")
         return f"err: {e}"
 
-    #thought_time = data["total_duration"]
-    answer = data["message"]["content"]
+    answer = data["choices"][0]["message"]["content"]
     
     ai_memory.append({
         "role": "assistant",
@@ -275,7 +275,7 @@ def watch_messages(driver):
                     if username != MY_BOT_USERNAME and content:
 
                         if f"@{MY_BOT_USERNAME.lower()}" in content.lower():
-                            send_message(driver,prompt(content,username))
+                            send_message(driver,prompt(content))
                             # send_message(driver, prompt(content,username))
                         elif (content.lower())[:5] == "/game":
                             gameName = content[6:]
