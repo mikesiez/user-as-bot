@@ -276,7 +276,6 @@ def watch_messages(driver):
 
                         if f"@{MY_BOT_USERNAME.lower()}" in content.lower():
                             send_message(driver,prompt(content))
-                            # send_message(driver, prompt(content,username))
                         elif (content.lower())[:5] == "/game":
                             gameName = content[6:]
                             send_message(driver, getgame(gameName))
