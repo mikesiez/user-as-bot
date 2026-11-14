@@ -1,3 +1,6 @@
 .env
 seen_message_ids.json
 test.py
+
+*.out
+*.sh
